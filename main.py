@@ -10,6 +10,7 @@ webhook = None
 
 details = {}
 
+token = ""  # Enter here
 
 def make_message_info(msg: discord.Message):
     return {
@@ -86,4 +87,4 @@ async def on_message(msg: discord.Message):
                     break
         
 if __name__ == '__main__':
-    client.run('ODI3Mzk3OTc2MDc0NDg1Nzgw.YGacaQ.h5MapmWuPuETUnVXQsCgHE3BtGo')
+    client.run(token)
