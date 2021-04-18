@@ -29,7 +29,7 @@ def add_info(id: int, msg: discord.Message):
     else:
         details[id].append(make_message_info(msg))
 
-    t = Timer(10, remove_first, [id])
+    t = Timer(60, remove_first, [id])
     t.start()
 
 
@@ -57,9 +57,9 @@ async def on_message(msg: discord.Message):
                 user_details[-2]['time']
             ).total_seconds()
 
+            add_info(user.id, msg)
             if t1 < 2 and t2 < 2:
                 await msg.delete()
-            add_info(user.id, msg)
     else:
         add_info(user.id, msg)
 
