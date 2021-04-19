@@ -1,16 +1,14 @@
 from datetime import datetime
 from threading import Timer
-import requests
-import random
+
 import discord
-import asyncio
+
+from config import TOKEN
 
 client = discord.Client()
-webhook = None
 
 details = {}
 
-token = ""  # Enter here
 
 def make_message_info(msg: discord.Message):
     return {
@@ -34,8 +32,6 @@ def add_info(id: int, msg: discord.Message):
     t = Timer(60, remove_first, [id])
     t.start()
 
-random_words = requests.get('https://random-word-api.herokuapp.com/all').json()
-
 
 @client.event
 async def on_ready():
@@ -44,11 +40,21 @@ async def on_ready():
 
 @client.event
 async def on_message(msg: discord.Message):
-    global webhook
     if msg.author == client.user:
         return
     user: discord.Member = msg.author
 
+    # content based deletion
+
+    # this is NOT an empty string; it contains a zero width non joiner
+    if msg.content.count('‌') >= 2:
+        await msg.delete()
+
+    # remove messages containing lots of newlines
+    if msg.content.replace(' ', '').count('\n\n\n\n') > 0:
+        await msg.delete()
+
+    # time based deletion
     if user.id in details:
         user_details = details[user.id]
 
@@ -64,27 +70,8 @@ async def on_message(msg: discord.Message):
 
             add_info(user.id, msg)
             if t1 < 2 and t2 < 2:
-                if msg.author.display_name != 'urlocalwordspammer':
-                    await msg.delete()
-                
+                await msg.delete()
     else:
         add_info(user.id, msg)
-        
-    if '|make' in msg.content.lower():
-        channel = msg.channel
-        if webhook is None:
-            webhook = await channel.create_webhook(name='Bot Need This Thanks')
-        await msg.author.send('Ready to spam.')
-        
-    elif msg.content == '|start':
-            while True:
-                try:
-                    await webhook.send(username="urlocalwordspammer", content=f"@everyone {random.choice(random_words)}")
-                    await asyncio.sleep(1)
-                except Exception as e:
-                    await msg.author.send('Oh No. Something went wrong.')
-                    await msg.author.send(str(e))
-                    break
-        
-if __name__ == '__main__':
-    client.run(token)
+
+client.run(TOKEN)
